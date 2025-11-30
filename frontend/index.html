@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Assistant Bot</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>🤖 College Assistant Bot</h2>
+            <span class="status online">Online</span>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <div class="welcome-message">
+                <div class="message bot">
+                    <div class="message-content">
+                        👋 Welcome to College Assistant! <br>
+                        I can help with:
+                        <ul>
+                            <li>📚 Class schedules & timetables</li>
+                            <li>📅 Exam dates & notices</li>
+                            <li>👨‍🏫 Faculty details</li>
+                            <li>📖 Library timings</li>
+                            <li>📝 Assignment deadlines</li>
+                        </ul>
+                        Try asking: "What is the class schedule?"
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="message-input" placeholder="Type your question here..." maxlength="500">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
