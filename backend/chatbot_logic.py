@@ -1,18 +1,39 @@
+import sqlite3
+import random
+
 def find_response(user_message):
-    """Rule-based keyword matching from synopsis"""
-    user_lower = user_message.lower()
+    """Enhanced rule-based matching with categories"""
+    user_lower = user_message.lower().strip()
     
-    faqs = [
-        ("schedule class timetable", "What is the class schedule?", "Classes run from 9 AM to 5 PM. Check the notice board or college app for your specific timetable."),
-        ("exam timetable dates", "When are the exams?", "Exam timetable is posted 2 weeks before exams start. Check academic section or ask faculty."),
-        ("faculty professor details", "Who is my professor?", "Faculty list: Prof. Balram Yadav (Guide), Computer Science Dept. Email available on college portal."),
-        ("library hours books", "Library timings?", "Library: 8 AM - 8 PM weekdays, 10 AM - 4 PM weekends. 2 books max for students."),
-        ("assignment deadline submission", "Assignment deadlines?", "Assignments due every Friday 5 PM. Submit via college LMS portal."),
-        ("notice updates events", "Latest campus notices?", "Check notice board or college website for events, holidays, and updates.")
-    ]
+    conn = sqlite3.connect('../database/college.db')
+    cursor = conn.cursor()
     
+    cursor.execute("SELECT keywords, question, answer FROM faqs")
+    faqs = cursor.fetchall()
+    conn.close()
+    
+    # Multiple keyword matching
     for keywords, question, answer in faqs:
-        if any(word in user_lower for word in keywords.split()):
+        keyword_list = keywords.split()
+        if sum(1 for word in keyword_list if word in user_lower) >= 1:
             return answer
     
-    return "I can help with class schedules, exams, faculty, library, assignments, and notices. Try asking about those!"
+    # Fallback responses by category
+    responses = {
+        "schedule": "Try asking about class timetable, semester dates",
+        "exams": "Ask about exam schedule, results, attendance",
+        "faculty": "Need professor details or HOD location?",
+        "library": "Library timings or rules?",
+        "academics": "Assignment deadlines or syllabus?",
+        "admin": "Fees, ID card, certificates?",
+        "campus": "Canteen, hostel, WiFi?",
+        "events": "Fest dates or holidays?"
+    }
+    
+    fallback = random.choice([
+        "I can help with academics, exams, faculty, library, fees, hostel, events. What do you need?",
+        "Try: 'class schedule', 'exam dates', 'library timing', 'faculty details', 'fee payment'",
+        "Available 24/7 for college info! Ask about schedules, exams, or campus facilities."
+    ])
+    
+    return fallback
