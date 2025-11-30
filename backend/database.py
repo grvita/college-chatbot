@@ -20,7 +20,7 @@ def init_db():
     # 25+ REAL COLLEGE FAQs (from synopsis + extras)
     faqs = [
         # Academic Schedule
-        ("schedule class timetable time table", "What is the class schedule?", "Classes: Mon-Fri 9:00 AM - 5:00 PM. Saturday: 9:00 AM - 1:00 PM. Check academic portal for your batch.", "schedule"),
+        ("schedule class timetable time table", "What is the class schedule?", "Classes: Mon-Fri 9:00 AM - 5:00 PM. Saturday: 9:30 AM - 3:20 PM:. Check academic portal for your batch.", "schedule"),
         ("semester start end dates", "When does semester start?", "Odd semester: Aug 1st. Even semester: Jan 15th. Check academic calendar.", "schedule"),
         
         # Examinations
@@ -72,7 +72,25 @@ def init_db():
     ''')
     cursor.execute("INSERT OR IGNORE INTO admin (id, username, password) VALUES (1, 'admin', 'admin123')")
     conn.commit()
-    
+        # Student table for login without password
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS students (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            enrollment_no TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            branch TEXT NOT NULL,
+            year_sem TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+
+    # Example: your own record
+    cursor.execute('''
+        INSERT OR IGNORE INTO students (enrollment_no, name, branch, year_sem)
+        VALUES (?, ?, ?, ?)
+    ''', ("0704CS231062", "Garvita Kasera", "CS", "3rd Year - 5nd Sem"))
+    conn.commit()
+
     conn.close()
     print("✅ Enhanced database: 25+ FAQs + Admin panel ready!")
 

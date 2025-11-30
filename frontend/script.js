@@ -1,80 +1,60 @@
-class CollegeChatbot {
-    constructor() {
-        this.messagesContainer = document.getElementById('chat-messages');
-        this.messageInput = document.getElementById('message-input');
-        this.sendButton = document.getElementById('send-button');
-        this.init();
-    }
+const API_URL = "http://127.0.0.1:5000/chat";
 
-    init() {
-        this.sendButton.addEventListener('click', () => this.sendMessage());
-        this.messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                this.sendMessage();
-            }
+const messagesDiv = document.getElementById("chat-messages");
+const inputEl = document.getElementById("message-input");
+const sendBtn = document.getElementById("send-button");
+
+// Add a message bubble
+function addMessage(text, sender) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "message " + sender;
+
+    const bubble = document.createElement("div");
+    bubble.className = "message-content";
+    bubble.textContent = text;
+
+    wrapper.appendChild(bubble);
+    messagesDiv.appendChild(wrapper);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Send message to backend
+async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    addMessage(text, "user");
+    inputEl.value = "";
+    inputEl.focus();
+
+    sendBtn.disabled = true;
+
+    try {
+        const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text })
         });
-    }
 
-    async sendMessage() {
-        const message = this.messageInput.value.trim();
-        if (!message) return;
-
-        this.addMessage('user', message);
-        this.messageInput.value = '';
-        this.sendButton.disabled = true;
-        this.showTypingIndicator();
-
-        try {
-            const response = await fetch('http://127.0.0.1:5000/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message })
-            });
-            
-            const data = await response.json();
-            this.hideTypingIndicator();
-            this.addMessage('bot', data.response || 'Sorry, I could not process that.');
-        } catch (error) {
-            this.hideTypingIndicator();
-            this.addMessage('bot', '❌ Backend not running? Start with: cd backend && python app.py');
-        } finally {
-            this.sendButton.disabled = false;
-            this.messageInput.focus();
+        if (!res.ok) {
+            addMessage("Server error (" + res.status + ").", "bot");
+            return;
         }
-    }
 
-    addMessage(sender, content) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}`;
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        contentDiv.textContent = content;
-        
-        messageDiv.appendChild(contentDiv);
-        this.messagesContainer.appendChild(messageDiv);
-        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
-    }
-
-    showTypingIndicator() {
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'message bot';
-        typingDiv.id = 'typing-indicator';
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'typing-indicator';
-        contentDiv.innerHTML = 'Bot is typing<span class="typing-dots"><span></span><span></span><span></span></span>';
-        
-        typingDiv.appendChild(contentDiv);
-        this.messagesContainer.appendChild(typingDiv);
-        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
-    }
-
-    hideTypingIndicator() {
-        const indicator = document.getElementById('typing-indicator');
-        if (indicator) indicator.remove();
+        const data = await res.json();
+        addMessage(data.reply || "No reply.", "bot");
+    } catch (err) {
+        addMessage("Cannot reach server. Is backend running?", "bot");
+    } finally {
+        sendBtn.disabled = false;
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => new CollegeChatbot());
+// Events
+sendBtn.addEventListener("click", sendMessage);
+inputEl.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
